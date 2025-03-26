@@ -3,6 +3,9 @@ const mongoose = require('mongoose'); // Importa o módulo mongoose para interag
 const cors = require('cors'); // Importa o módulo cors para permitir requisições de diferentes origens
 const dotenv = require('dotenv'); // Importa o módulo dotenv para gerenciar variáveis de ambiente
 
+const router = express.Router();
+
+
 const Cliente = require('./models/Cliente'); // Importa o modelo de Cliente
 const Endereco = require('./models/Endereco'); // Importa o modelo de Endereco
 
@@ -36,16 +39,39 @@ app.get('/', (req, res) => {
 })
 
 
+const bcrypt = require('bcrypt'); // Importa bcrypt para hashing
+
 // Registrar cliente
 app.post('/clientes/registro', async (req, res) => {
     const { nome, email, senha, telefones, enderecos } = req.body; // Extrai os dados do corpo da requisição
 
     try {
-        const cliente = new Cliente({ nome, email, senha, telefones, enderecos }); // Cria uma nova instância de Cliente
-        await cliente.save(); // Salva o cliente no banco de dados
-        res.status(201).json({ message: 'Cliente registrado com sucesso', cliente }); // Retorna mensagem de sucesso com status 201
+        // Verifica se o email já está cadastrado
+        const clienteExistente = await Cliente.findOne({ email });
+        if (clienteExistente) {
+            return res.status(400).json({ message: 'Email já cadastrado.' });
+        }
+
+        // Hashea a senha
+        const saltRounds = 10;
+        const senhaHasheada = await bcrypt.hash(senha, saltRounds);
+
+        // Cria uma nova instância de Cliente com a senha hasheada
+        const cliente = new Cliente({
+            nome,
+            email,
+            telefones,
+            enderecos,
+            senha: senhaHasheada, // Armazena a senha hasheada
+        });
+
+        // Salva o cliente no banco de dados
+        await cliente.save();
+
+        res.status(201).json({ message: 'Cliente registrado com sucesso', cliente }); // Retorna mensagem de sucesso
     } catch (err) {
-        res.status(400).json({ message: err.message }); // Retorna mensagem de erro com status 400
+        console.error('Erro no registro:', err);
+        res.status(500).json({ message: 'Erro ao registrar cliente.' }); // Retorna mensagem de erro genérico
     }
 });
 
