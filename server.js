@@ -11,7 +11,7 @@ dotenv.config(); // Carrega as variáveis de ambiente do arquivo .env
 const app = express(); // Cria uma instância do aplicativo Express
 const PORT = process.env.PORT || 5000; // Define a porta do servidor a partir da variável de ambiente ou usa 5000 como padrão
 const MONGO_URI = process.env.MONGO_URI; // Obtém a URI de conexão do MongoDB a partir da variável de ambiente
-const secret = process.env.JWT_SECRET; // Obtém a chave secreta do JWT a partir da variável de ambiente
+
 
 app.use(cors()); // Utiliza o middleware CORS
 app.use(express.json()); // Utiliza o middleware para parsear o corpo das requisições como JSON
